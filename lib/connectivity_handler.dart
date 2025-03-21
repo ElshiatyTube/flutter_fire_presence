@@ -3,14 +3,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'i_connectivity.dart';
 
-class ConnectivityHandler extends IConnectivity {
-  ConnectivityHandler._() {
+class FirePresenceHandler extends IConnectivity {
+  FirePresenceHandler._() {
     _init();
   }
 
-  static final ConnectivityHandler _singleton = ConnectivityHandler._();
+  static final FirePresenceHandler _singleton = FirePresenceHandler._();
 
-  factory ConnectivityHandler() => _singleton;
+  factory FirePresenceHandler() => _singleton;
 
   final StreamController<bool> _hasConnectionController =
   StreamController<bool>.broadcast();
