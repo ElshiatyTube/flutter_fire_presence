@@ -45,9 +45,9 @@ class FirePresenceHandler extends IFirePresenceHandler {
     _connectionStreamSubscription?.cancel(); // Prevent multiple listeners
     try{
       _connectionStreamSubscription = hasConnectionStream.listen((isConnected) {
-        _updatePresence(
-            uid: uid, isOnline: isConnected, onDisconnect: onDisconnect);
         debugPrint('ConnectivityHandler: User is online: $isConnected');
+        _updatePresence(
+            uid: uid, isOnline: isConnected, onSuccess: onDisconnect);
       });
     }catch(e){
       onError?.call(e);
@@ -55,15 +55,15 @@ class FirePresenceHandler extends IFirePresenceHandler {
   }
 
   void _updatePresence(
-      {required String uid, required bool isOnline, Function? onDisconnect,Function? onError}) {
+      {required String uid, required bool isOnline, Function? onSuccess,Function? onError}) {
     updatePresence(
         uid: uid,
         isOnline: isOnline,
-        onDisconnectSuccess: () {
+        onSuccess: () {
           debugPrint('ConnectivityHandler: onDisconnect triggered');
-          onDisconnect?.call();
+          onSuccess?.call();
         },
-        onDisconnectError: (error) {
+        onError: (error) {
           debugPrint('ConnectivityHandler: onDisconnectError: $error');
           onError?.call(error);
         });
@@ -87,7 +87,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
         uid: uid,
         isOnline: false,
         onError: onError,
-        onDisconnect: () {
+        onSuccess: () {
           debugPrint('ConnectivityHandler: User forcibly disconnected');
           onForceDisconnect?.call();
         });

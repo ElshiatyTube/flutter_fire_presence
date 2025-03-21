@@ -14,19 +14,19 @@ abstract class FirebaseDatabaseDataSource {
   };
 
   /// Updates the user's presence status and sets an `onDisconnect` behavior.
-  Future<void> updatePresence({required String uid, required bool isOnline,Function? onDisconnectSuccess,Function? onDisconnectError}) async {
+  Future<void> updatePresence({required String uid, required bool isOnline,Function? onSuccess,Function? onError}) async {
     final userRef = _presenceRef.child(uid);
 
     if (isOnline) {
       // Ensure previous `onDisconnect` is canceled in case of reconnection
       await userRef.onDisconnect().cancel();
-
-      // Set new `onDisconnect` behavior
-      await userRef.onDisconnect().update(_offlineStatus).then((value) {
-        onDisconnectSuccess?.call();
-      }).catchError((error) {
-        onDisconnectError?.call(error);
-      });
+      try {
+        // Set new `onDisconnect` behavior
+        await userRef.onDisconnect().update(_offlineStatus);
+        onSuccess?.call();
+      } catch (e) {
+        onError?.call(e);
+      }
     }
 
     // Update the presence status in real-time
