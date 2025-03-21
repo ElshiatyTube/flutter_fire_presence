@@ -1,39 +1,116 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Firebase Presence Handler
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Overview
+This package offers a robust Firebase-based presence detection system using Dart and Firebase Realtime Database. It accurately tracks user connectivity status and updates their presence in real time, ensuring reliability even in critical scenarios such as network disconnections, app crashes, device shutdowns, or user logouts. Additionally, it provides the flexibility to mirror this real-time online status to your own database via a custom API, ensuring seamless integration with your backend.
 
 ## Features
+- Monitors internet connectivity using `connectivity_plus`.
+- Updates Firebase Realtime Database with user presence status.
+- Automatically handles `onDisconnect` to update offline status.
+- Provides a `Stream<bool>` to listen for connectivity changes.
+- Ability to Deploys a Firebase Cloud Function to mirror presence data to your database via an API.
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## Installation
 
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add dependencies to your `pubspec.yaml`:
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_fire_presence: ^X.X.X  # Replace with the latest version
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
+### Start Monitoring Connection where needed (for example when the app starts or when the user logs in):
 ```dart
-const like = 'sample';
+FirePresenceHandler().connect(uid: 'user_id');
 ```
 
-## Additional information
+### Force Disconnect when needed (for example when the user logs out):
+```dart
+FirePresenceHandler().forceDisconnect(uid: 'user_id');
+```
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## Firebase Realtime Database Setup
+Ensure you have setup your Firebase project and configured the Realtime Database 
+
+## Firebase Cloud Functions Deployment
+
+### Prerequisites
+
+1. Install Firebase CLI: [Firebase CLI](https://firebase.google.com/docs/cli)
+2. Login to Firebase:
+   ```sh
+   firebase login
+   ```
+3. Create a `firebase` folder in the root of your project and open it in the terminal:
+   ```sh
+   mkdir firebase && cd firebase
+   ```
+4. Initialize Firebase Functions:
+   ```sh
+   firebase init functions
+   ```
+    - Select your Firebase project.
+    - Choose **JavaScript** as the language.
+    - Choose **No** if asked about TypeScript.
+    - Choose **No** when asked about enabling ESLint setup.
+
+### Deploy Firebase Functions
+
+Run the deployment script from the root of your project:
+
+```sh
+dart bin/deploy_firebase.dart <API_URL>
+```
+
+Replace `<API_URL>` with the actual API where presence data should be mirrored.
+
+## API Payload Example
+
+The API will receive presence data in the following JSON format:
+```json
+{
+  "uid": "user_id",
+  "online": true,
+  "lastOnline": 1630000000000
+}
+```
+## Firebase Function Logic
+
+The function `onUserPresenceStatusChange` listens for presence updates and sends the data to an external API:
+
+```js
+exports.onUserPresenceStatusChange = functions.database
+  .ref('/presence/{uId}')
+  .onWrite((change, context) => {
+    const data = change.after.val();
+    if (!data) return null;
+    
+    const apiUrl = process.env.API_MIRROR_URL;
+    if (!apiUrl) return null;
+    
+    return axios.post(apiUrl, {
+      uid: context.params.uId,
+      online: data.online ?? false,
+      lastOnline: data.lastOnline,
+    });
+  });
+```
+
+## Cleanup and Disposal
+
+Dispose of the connection when no longer needed:
+
+```dart
+firePresenceHandler.dispose();
+```
+
+## License
+
+This project is licensed under the MIT License. Feel free to modify and use it in your applications.
+
+---
+
+**Author:** Youssef Elshiaty

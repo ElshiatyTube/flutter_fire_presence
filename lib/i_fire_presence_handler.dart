@@ -1,6 +1,6 @@
-import 'firebase_db_ds.dart';
+import 'firebase_presence_ds.dart';
 
-abstract class IFirePresenceHandler extends FirebaseDatabaseDataSource{
+abstract class IFirePresenceHandler extends FirebasePresenceDataSource{
   Stream<bool> get hasConnectionStream;
   void dispose();
   void connect({required String uid, Function(bool)? onSuccess,Function? onError});

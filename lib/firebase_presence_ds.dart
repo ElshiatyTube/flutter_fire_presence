@@ -1,6 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 
-abstract class FirebaseDatabaseDataSource {
+abstract class FirebasePresenceDataSource {
   final DatabaseReference _presenceRef =
       FirebaseDatabase.instance.ref().child('presence');
 

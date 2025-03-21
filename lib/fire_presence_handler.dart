@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'i_connectivity.dart';
+import 'i_fire_presence_handler.dart';
 
 class FirePresenceHandler extends IFirePresenceHandler {
   FirePresenceHandler._();
@@ -24,7 +23,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
     });
 
     _isInitialized = true;
-    debugPrint('FirePresenceHandler: Initialized.');
+    print('FirePresenceHandler: Initialized.');
   }
 
   @override
@@ -43,7 +42,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
     _hasConnectionStreamSubscription?.cancel();
     try {
       _hasConnectionStreamSubscription = hasConnectionStream.listen((isConnected) {
-        debugPrint('ConnectivityHandler: User is online: $isConnected');
+        print('ConnectivityHandler: User is online: $isConnected');
         _updatePresence(uid: uid, isOnline: isConnected, onSuccess: onSuccess);
       });
     } catch (e) {
@@ -61,11 +60,11 @@ class FirePresenceHandler extends IFirePresenceHandler {
       uid: uid,
       isOnline: isOnline,
       onSuccess: () {
-        debugPrint('ConnectivityHandler: onSuccess triggered');
+        print('ConnectivityHandler: onSuccess triggered');
         onSuccess?.call();
       },
       onError: (error) {
-        debugPrint('ConnectivityHandler: onError: $error');
+        print('ConnectivityHandler: onError: $error');
         onError?.call(error);
       },
     );
@@ -104,7 +103,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
       uid: uid,
       isOnline: false,
       onSuccess: () {
-        debugPrint('ConnectivityHandler: User forcibly disconnected');
+        print('ConnectivityHandler: User forcibly disconnected');
         _isInitialized = false;
         _connectivitySubscription?.cancel(); // Stop listening to connectivity changes
         onSuccess?.call();
