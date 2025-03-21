@@ -4,9 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'i_connectivity.dart';
 
 class FirePresenceHandler extends IFirePresenceHandler {
-  FirePresenceHandler._() {
-    _init();
-  }
+  FirePresenceHandler._();
 
   static final FirePresenceHandler _singleton = FirePresenceHandler._();
 
@@ -15,25 +13,29 @@ class FirePresenceHandler extends IFirePresenceHandler {
   final StreamController<bool> _hasConnectionController =
   StreamController<bool>.broadcast();
 
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  StreamSubscription<bool>? _connectionStreamSubscription;
+  StreamSubscription<bool>? _hasConnectionStreamSubscription;
+  bool _isInitialized = false;
 
-  void _init() async {
-    _hasConnectionController.add(await checkConnection());
+  Future<void> _init() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
 
-    _connectivitySubscription = Connectivity()
+    _hasConnectionController.add(await _checkConnection());
+
+    Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> event) {
       bool isConnected =
       !event.any((element) => element == ConnectivityResult.none);
       _hasConnectionController.add(isConnected);
     });
-  }
 
+    debugPrint('FirePresenceHandler: Initialized.');
+  }
   @override
   Stream<bool> get hasConnectionStream => _hasConnectionController.stream;
 
-  Future<bool> checkConnection() async {
+  Future<bool> _checkConnection() async {
     List<ConnectivityResult> connectivityResult =
     await Connectivity().checkConnectivity();
     return !connectivityResult
@@ -42,9 +44,9 @@ class FirePresenceHandler extends IFirePresenceHandler {
 
   void _listenToConnectionChanges(
       {required String uid, Function? onDisconnect,Function? onError}) {
-    _connectionStreamSubscription?.cancel(); // Prevent multiple listeners
+    _hasConnectionStreamSubscription?.cancel(); // Prevent multiple listeners
     try{
-      _connectionStreamSubscription = hasConnectionStream.listen((isConnected) {
+      _hasConnectionStreamSubscription = hasConnectionStream.listen((isConnected) {
         debugPrint('ConnectivityHandler: User is online: $isConnected');
         _updatePresence(
             uid: uid, isOnline: isConnected, onSuccess: onDisconnect);
@@ -72,13 +74,14 @@ class FirePresenceHandler extends IFirePresenceHandler {
   @override
   void dispose() {
     _hasConnectionController.close();
-    _connectivitySubscription?.cancel();
-    _connectionStreamSubscription?.cancel();
+    _hasConnectionStreamSubscription?.cancel();
   }
 
   @override
   void connect({required String uid, Function? onDisconnect,Function? onError}) {
-    _listenToConnectionChanges(uid: uid, onDisconnect: onDisconnect,onError: onError);
+    _init().then((_) {
+      _listenToConnectionChanges(uid: uid, onDisconnect: onDisconnect,onError: onError);
+    });
   }
 
   @override
