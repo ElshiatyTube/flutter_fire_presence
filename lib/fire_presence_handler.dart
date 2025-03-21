@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'i_connectivity.dart';
 
-class FirePresenceHandler extends IConnectivity {
+class FirePresenceHandler extends IFirePresenceHandler {
   FirePresenceHandler._() {
     _init();
   }
