@@ -14,7 +14,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
   StreamSubscription<bool>? _hasConnectionStreamSubscription;
   bool _isInitialized = false;
 
-  Future<void> _init() async {
+  void _init() async {
     if (_isInitialized) return;
     _isInitialized = true;
 
@@ -87,10 +87,9 @@ class FirePresenceHandler extends IFirePresenceHandler {
     Function(bool)? onSuccess,
     Function? onError,
   }) {
-    _init().then((_) {
-      _listenToConnectionChanges(
-          uid: uid, onSuccess: onSuccess, onError: onError);
-    });
+    _init();
+    _listenToConnectionChanges(
+        uid: uid, onSuccess: onSuccess, onError: onError);
   }
 
   @override
