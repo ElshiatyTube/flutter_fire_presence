@@ -1,4 +1,4 @@
-name: flutter_firebase_presence
+name: flutter_fire_presence
 description: "Flutter Firebase Presence library for observe user presence (online-offline) status in real-time"
 version: 1.0.0
 homepage:
