@@ -10,9 +10,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
 
   factory FirePresenceHandler() => _singleton;
 
-  final StreamController<bool> _hasConnectionController =
-  StreamController<bool>.broadcast();
-
+  final _hasConnectionController = StreamController<bool>.broadcast();
   StreamSubscription<bool>? _hasConnectionStreamSubscription;
   bool _isInitialized = false;
 
@@ -21,54 +19,60 @@ class FirePresenceHandler extends IFirePresenceHandler {
     _isInitialized = true;
 
     _hasConnectionController.add(await _checkConnection());
-
-    Connectivity()
-        .onConnectivityChanged
-        .listen((List<ConnectivityResult> event) {
+    Connectivity().onConnectivityChanged.listen((event) {
       bool isConnected =
-      !event.any((element) => element == ConnectivityResult.none);
+          !event.any((element) => element == ConnectivityResult.none);
       _hasConnectionController.add(isConnected);
     });
 
     debugPrint('FirePresenceHandler: Initialized.');
   }
+
   @override
   Stream<bool> get hasConnectionStream => _hasConnectionController.stream;
 
   Future<bool> _checkConnection() async {
     List<ConnectivityResult> connectivityResult =
-    await Connectivity().checkConnectivity();
+        await Connectivity().checkConnectivity();
     return !connectivityResult
         .any((element) => element == ConnectivityResult.none);
   }
 
-  void _listenToConnectionChanges(
-      {required String uid, Function? onDisconnect,Function? onError}) {
-    _hasConnectionStreamSubscription?.cancel(); // Prevent multiple listeners
-    try{
-      _hasConnectionStreamSubscription = hasConnectionStream.listen((isConnected) {
+  void _listenToConnectionChanges({
+    required String uid,
+    Function(bool)? onSuccess,
+    Function? onError,
+  }) {
+    _hasConnectionStreamSubscription?.cancel();
+    try {
+      _hasConnectionStreamSubscription =
+          hasConnectionStream.listen((isConnected) {
         debugPrint('ConnectivityHandler: User is online: $isConnected');
-        _updatePresence(
-            uid: uid, isOnline: isConnected, onSuccess: onDisconnect);
+        _updatePresence(uid: uid, isOnline: isConnected, onSuccess: onSuccess);
       });
-    }catch(e){
+    } catch (e) {
       onError?.call(e);
     }
   }
 
-  void _updatePresence(
-      {required String uid, required bool isOnline, Function? onSuccess,Function? onError}) {
+  void _updatePresence({
+    required String uid,
+    required bool isOnline,
+    Function? onSuccess,
+    Function? onError,
+  }) {
     updatePresence(
-        uid: uid,
-        isOnline: isOnline,
-        onSuccess: () {
-          debugPrint('ConnectivityHandler: onDisconnect triggered');
-          onSuccess?.call();
-        },
-        onError: (error) {
-          debugPrint('ConnectivityHandler: onDisconnectError: $error');
-          onError?.call(error);
-        });
+      uid: uid,
+      isOnline: isOnline,
+      onSuccess: () {
+        debugPrint('ConnectivityHandler: onSuccess triggered');
+        onSuccess?.call();
+      },
+      onError: (error) {
+        debugPrint('ConnectivityHandler: onError: $error');
+        onError?.call(error);
+      },
+    );
   }
 
   @override
@@ -78,21 +82,24 @@ class FirePresenceHandler extends IFirePresenceHandler {
   }
 
   @override
-  void connect({required String uid, Function? onDisconnect,Function? onError}) {
+  void connect({
+    required String uid,
+    Function(bool)? onSuccess,
+    Function? onError,
+  }) {
     _init().then((_) {
-      _listenToConnectionChanges(uid: uid, onDisconnect: onDisconnect,onError: onError);
+      _listenToConnectionChanges(
+          uid: uid, onSuccess: onSuccess, onError: onError);
     });
   }
 
   @override
-  void forceDisconnect({required String uid, Function? onForceDisconnect,Function? onError}) {
+  void forceDisconnect({
+    required String uid,
+    Function? onSuccess,
+    Function? onError,
+  }) {
     _updatePresence(
-        uid: uid,
-        isOnline: false,
-        onError: onError,
-        onSuccess: () {
-          debugPrint('ConnectivityHandler: User forcibly disconnected');
-          onForceDisconnect?.call();
-        });
+        uid: uid, isOnline: false, onSuccess: onSuccess, onError: onError);
   }
 }
