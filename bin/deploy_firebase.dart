@@ -41,7 +41,8 @@ void main(List<String> args) async {
       exit(1);
     }
   } else {
-    print("⚠️ Custom index.js not found at $customIndexPath. Skipping replacement.");
+    print(
+        "⚠️ Custom index.js not found at $customIndexPath. Skipping replacement.");
   }
 
   // Step 3: Install axios (if not already installed)
@@ -96,7 +97,8 @@ void main(List<String> args) async {
 
   final exitCode = await deployProcess.exitCode;
   if (exitCode == 0) {
-    print("\n✅ Firebase function 'onUserPresenceStatusChange' deployed successfully!");
+    print(
+        "\n✅ Firebase function 'onUserPresenceStatusChange' deployed successfully!");
   } else {
     print("\n❌ Deployment failed with exit code: $exitCode");
   }

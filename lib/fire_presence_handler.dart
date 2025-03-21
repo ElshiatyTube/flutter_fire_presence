@@ -2,18 +2,23 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'i_fire_presence_handler.dart';
 
+/// A handler for managing the presence of a user based on connectivity status.
 class FirePresenceHandler extends IFirePresenceHandler {
   FirePresenceHandler._();
 
+  /// Singleton instance of [FirePresenceHandler].
   static final FirePresenceHandler _singleton = FirePresenceHandler._();
 
+  /// Factory constructor to return the singleton instance.
   factory FirePresenceHandler() => _singleton;
 
+  /// Stream controller to broadcast connectivity status changes.
   final _hasConnectionController = StreamController<bool>.broadcast();
   StreamSubscription<bool>? _hasConnectionStreamSubscription;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _isInitialized = false;
 
+  /// Initializes the connectivity listener.
   void _init() {
     if (_isInitialized) return;
 
@@ -26,14 +31,21 @@ class FirePresenceHandler extends IFirePresenceHandler {
     print('FirePresenceHandler: Initialized.');
   }
 
+  /// Stream of connectivity status changes.
   @override
   Stream<bool> get hasConnectionStream => _hasConnectionController.stream;
 
+  /// Checks the current connectivity status.
   Future<bool> _checkConnection() async {
     List<ConnectivityResult> connectivityResult = await Connectivity().checkConnectivity();
     return !connectivityResult.any((element) => element == ConnectivityResult.none);
   }
 
+  /// Listens to connectivity changes and updates user presence.
+  ///
+  /// \param uid The user ID.
+  /// \param onSuccess Callback function to be called on success.
+  /// \param onError Callback function to be called on error.
   void _listenToConnectionChanges({
     required String uid,
     Function(bool)? onSuccess,
@@ -50,6 +62,12 @@ class FirePresenceHandler extends IFirePresenceHandler {
     }
   }
 
+  /// Updates the presence status of the user.
+  ///
+  /// \param uid The user ID.
+  /// \param isOnline The online status of the user.
+  /// \param onSuccess Callback function to be called on success.
+  /// \param onError Callback function to be called on error.
   void _updatePresence({
     required String uid,
     required bool isOnline,
@@ -70,6 +88,7 @@ class FirePresenceHandler extends IFirePresenceHandler {
     );
   }
 
+  /// Disposes the resources used by the handler.
   @override
   void dispose() {
     _hasConnectionController.close();
@@ -77,6 +96,11 @@ class FirePresenceHandler extends IFirePresenceHandler {
     _connectivitySubscription?.cancel();
   }
 
+  /// Connects the user and starts listening to connectivity changes.
+  ///
+  /// \param uid The user ID.
+  /// \param onSuccess Callback function to be called on success.
+  /// \param onError Callback function to be called on error.
   @override
   Future<void> connect({
     required String uid,
@@ -93,6 +117,11 @@ class FirePresenceHandler extends IFirePresenceHandler {
     _listenToConnectionChanges(uid: uid, onSuccess: onSuccess, onError: onError);
   }
 
+  /// Forces the user to disconnect and stops listening to connectivity changes.
+  ///
+  /// \param uid The user ID.
+  /// \param onSuccess Callback function to be called on success.
+  /// \param onError Callback function to be called on error.
   @override
   void forceDisconnect({
     required String uid,
