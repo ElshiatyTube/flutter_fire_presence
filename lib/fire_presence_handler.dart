@@ -100,6 +100,13 @@ class FirePresenceHandler extends IFirePresenceHandler {
     Function? onError,
   }) {
     _updatePresence(
-        uid: uid, isOnline: false, onSuccess: onSuccess, onError: onError);
+        uid: uid,
+        isOnline: false,
+        onSuccess: () {
+          debugPrint('ConnectivityHandler: User forcibly disconnected');
+          _isInitialized = false;
+          onSuccess?.call();
+        },
+        onError: onError);
   }
 }
