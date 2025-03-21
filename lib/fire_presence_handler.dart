@@ -18,7 +18,6 @@ class FirePresenceHandler extends IFirePresenceHandler {
     if (_isInitialized) return;
     _isInitialized = true;
 
-    _hasConnectionController.add(await _checkConnection());
     Connectivity().onConnectivityChanged.listen((event) {
       bool isConnected =
           !event.any((element) => element == ConnectivityResult.none);
